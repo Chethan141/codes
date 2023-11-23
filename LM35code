@@ -1,0 +1,41 @@
+#include <SimpleTimer.h>
+#include <LM35.h>
+#include <TimerOne.h>
+double temperature;
+double intervaltoblink;
+const int lm35Pin = A0;
+const int onboardLedPin = 13;
+void toggleOnboardLED(); 
+void setup() {
+  Serial.begin(9600);
+  analogReference(DEFAULT);
+  pinMode(onboardLedPin, OUTPUT);
+  Timer1.initialize(intervaltoblink * 1000);
+  Timer1.attachInterrupt(toggleOnboardLED);
+}
+void loop() {
+  int sensorvalue = 0;
+  for (int temp = 0; temp < 10; temp++) {
+    sensorvalue += analogRead(lm35Pin);
+    delay(10);
+  }
+  sensorvalue /= 10;
+  temperature = (sensorvalue * 5.0 / 1024.0) * 100.0;
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" °C");
+  if (temperature < 30) {
+    intervaltoblink = 250;
+  } else {
+    intervaltoblink = 500;
+  }
+  Timer1.initialize(intervaltoblink * 1000);
+  delay(1000);
+}
+void toggleOnboardLED() {
+  if (digitalRead(onboardLedPin) == HIGH) {
+    digitalWrite(onboardLedPin, LOW);
+  } else {
+    digitalWrite(onboardLedPin, HIGH);
+  }
+}
